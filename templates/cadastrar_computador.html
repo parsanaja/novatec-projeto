@@ -1,0 +1,40 @@
+<!-- templates/cadastrar_computador.html -->
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Cadastrar Computador</title>
+</head>
+<body>
+    <h2>Cadastrar Computador</h2>
+    <form method="POST">
+        <input type="hidden" name="empresa_id" value="{{ empresa_id }}">
+        <label>Nome da Máquina:</label><br>
+        <input type="text" name="nome_maquina" required><br>
+
+        <label>Processador:</label><br>
+        <input type="text" name="processador"><br>
+
+        <label>Memória:</label><br>
+        <input type="text" name="memoria"><br>
+
+        <label>Armazenamento:</label><br>
+        <input type="text" name="armazenamento"><br>
+
+        <label>Espaço Livre:</label><br>
+        <input type="text" name="espaco_livre"><br>
+
+        <label>Tipo de Disco:</label><br>
+        <select name="tipo_disco">
+            <option value="SSD">SSD</option>
+            <option value="HD Mecânico">HD Mecânico</option>
+        </select><br>
+
+        <label>Código do AnyDesk:</label><br>
+        <input type="text" name="anydesk_code"><br><br>
+
+        <button type="submit">Cadastrar</button>
+    </form>
+    {% extends 'base.html' %}
+</body>
+</html>

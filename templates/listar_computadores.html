@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <title>Computadores da Empresa</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    body {
+      background-color: #f8f9fa;
+    }
+    .header {
+      background-color: #343a40;
+      color: white;
+      padding: 20px;
+      border-radius: 10px;
+    }
+    .table th {
+      background-color: #dee2e6;
+    }
+    .btn-anydesk {
+      background-color: #dc3545;
+      color: white;
+    }
+  </style>
+</head>
+<body class="container mt-4">
+
+  <div class="header mb-4">
+    <h2>Computadores da Empresa: {{ empresa_nome }}</h2>
+  </div>
+
+  <div class="d-flex justify-content-between mb-3">
+    <a href="{{ url_for('cadastrar_computador', empresa_id=empresa_id) }}" class="btn btn-success">
+      + Novo Computador
+    </a>
+    <a href="{{ url_for('listar_empresas') }}" class="btn btn-secondary">
+      Voltar às Empresas
+    </a>
+  </div>
+
+  <div class="table-responsive">
+    <table class="table table-hover table-bordered align-middle text-center">
+      <thead class="table-light">
+        <tr>
+          <th>Nome</th>
+          <th>Processador</th>
+          <th>Memória</th>
+          <th>Armazenamento</th>
+          <th>Disco</th>
+          <th>Anydesk</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in computadores %}
+        <tr class="{% if c.concluido %}table-success{% endif %}">
+          <td>{{ c.nome_maquina }}</td>
+          <td>{{ c.processador }}</td>
+          <td>{{ c.memoria }}</td>
+          <td>{{ c.armazenamento }}</td>
+          <td>{{ c.tipo_disco }}</td>
+          <td>
+            {% if c.anydesk_code %}
+              <a href="anydesk://{{ c.anydesk_code }}" class="btn btn-sm btn-anydesk">Abrir</a>
+            {% else %}
+              <span class="text-muted">-</span>
+            {% endif %}
+          </td>
+          <td>
+            {% if not c.concluido %}
+              <a href="{{ url_for('marcar_concluido', id=c.id, empresa_id=empresa_id) }}" class="btn btn-sm btn-outline-success">
+                Concluir
+              </a>
+            {% else %}
+              <span class="badge bg-success">Concluído</span>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+{% extends 'base.html' %}
+</body>
+</html>
