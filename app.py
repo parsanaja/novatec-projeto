@@ -1,3 +1,5 @@
+# app.py (organizado com seções comentadas)
+
 from flask import Flask, render_template, request, redirect, session, url_for
 from flask_mysqldb import MySQL
 import MySQLdb.cursors
@@ -8,19 +10,19 @@ app = Flask(__name__)
 app.config.from_object(Config)
 mysql = MySQL(app)
 
-# DATA
+# ==================== CONTEXT PROCESSOR ====================
 @app.context_processor
 def inject_now():
     return {'current_year': datetime.now().year}
 
-# ROTA INICIAL
+# ==================== ROTAS BÁSICAS ====================
+
 @app.route('/')
 def index():
     if 'usuario' in session:
         return redirect(url_for('dashboard'))
     return render_template('login.html')
 
-# LOGIN
 @app.route('/login', methods=['POST'])
 def login():
     usuario = request.form['usuario']
@@ -30,20 +32,18 @@ def login():
         return redirect(url_for('dashboard'))
     return 'Login inválido'
 
-# DASHBOARD
 @app.route('/dashboard')
 def dashboard():
     if 'usuario' not in session:
         return redirect(url_for('index'))
     return render_template('dashboard.html')
 
-# LOGOUT
 @app.route('/logout')
 def logout():
     session.pop('usuario', None)
     return redirect(url_for('index'))
 
-# ========== ROTAS DE EMPRESA ==========
+# ==================== ROTAS DE EMPRESA ====================
 
 @app.route('/empresa/nova', methods=['GET', 'POST'])
 def nova_empresa():
@@ -103,7 +103,7 @@ def excluir_empresa(id):
     cursor.close()
     return redirect(url_for('listar_empresas'))
 
-# ========== ROTAS DE COMPUTADORES ==========
+# ==================== ROTAS DE COMPUTADORES ====================
 
 @app.route('/empresa/<int:empresa_id>/computador/novo', methods=['GET', 'POST'])
 def cadastrar_computador(empresa_id):
@@ -130,6 +130,7 @@ def cadastrar_computador(empresa_id):
         mysql.connection.commit()
         cursor.close()
         return redirect(url_for('listar_computadores', empresa_id=empresa_id))
+
     return render_template('cadastrar_computador.html', empresa_id=empresa_id)
 
 @app.route('/empresa/<int:empresa_id>/computadores')
@@ -152,6 +153,44 @@ def listar_computadores(empresa_id):
         empresa_nome=empresa['nome'] if empresa else 'Empresa'
     )
 
+@app.route('/computador/<int:id>/editar/<int:empresa_id>', methods=['GET', 'POST'])
+def editar_computador(id, empresa_id):
+    if 'usuario' not in session:
+        return redirect(url_for('index'))
+
+    cursor = mysql.connection.cursor(MySQLdb.cursors.DictCursor)
+
+    if request.method == 'POST':
+        dados = request.form
+        cursor.execute("""
+            UPDATE computadores SET 
+                nome_maquina=%s, processador=%s, memoria=%s, armazenamento=%s, espaco_livre=%s, tipo_disco=%s, anydesk_code=%s
+            WHERE id=%s
+        """, (
+            dados['nome_maquina'], dados['processador'], dados['memoria'], dados['armazenamento'],
+            dados['espaco_livre'], dados['tipo_disco'], dados['anydesk_code'], id
+        ))
+        mysql.connection.commit()
+        cursor.close()
+        return redirect(url_for('listar_computadores', empresa_id=empresa_id))
+
+    cursor.execute("SELECT * FROM computadores WHERE id = %s", (id,))
+    computador = cursor.fetchone()
+    cursor.close()
+
+    return render_template('editar_computador.html', computador=computador, empresa_id=empresa_id)
+
+@app.route('/computador/<int:id>/excluir/<int:empresa_id>')
+def excluir_computador(id, empresa_id):
+    if 'usuario' not in session:
+        return redirect(url_for('index'))
+
+    cursor = mysql.connection.cursor()
+    cursor.execute("DELETE FROM computadores WHERE id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    return redirect(url_for('listar_computadores', empresa_id=empresa_id))
+
 @app.route('/computador/<int:id>/concluir/<int:empresa_id>')
 def marcar_concluido(id, empresa_id):
     if 'usuario' not in session:
@@ -162,6 +201,19 @@ def marcar_concluido(id, empresa_id):
     mysql.connection.commit()
     cursor.close()
     return redirect(url_for('listar_computadores', empresa_id=empresa_id))
+
+@app.route('/computador/<int:id>/resetar/<int:empresa_id>')
+def resetar_status(id, empresa_id):
+    if 'usuario' not in session:
+        return redirect(url_for('index'))
+
+    cursor = mysql.connection.cursor()
+    cursor.execute("UPDATE computadores SET concluido = 0 WHERE id = %s", (id,))
+    mysql.connection.commit()
+    cursor.close()
+    return redirect(url_for('listar_computadores', empresa_id=empresa_id))
+
+# ==================== INICIAR APP ====================
 
 if __name__ == '__main__':
     app.run(debug=True)

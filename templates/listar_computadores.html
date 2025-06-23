@@ -41,43 +41,53 @@
   <div class="table-responsive">
     <table class="table table-hover table-bordered align-middle text-center">
       <thead class="table-light">
-        <tr>
-          <th>Nome</th>
-          <th>Processador</th>
-          <th>Memória</th>
-          <th>Armazenamento</th>
-          <th>Disco</th>
-          <th>Anydesk</th>
-          <th>Ações</th>
-        </tr>
-      </thead>
-      <tbody>
-        {% for c in computadores %}
-        <tr class="{% if c.concluido %}table-success{% endif %}">
-          <td>{{ c.nome_maquina }}</td>
-          <td>{{ c.processador }}</td>
-          <td>{{ c.memoria }}</td>
-          <td>{{ c.armazenamento }}</td>
-          <td>{{ c.tipo_disco }}</td>
-          <td>
-            {% if c.anydesk_code %}
-              <a href="anydesk://{{ c.anydesk_code }}" class="btn btn-sm btn-anydesk">Abrir</a>
-            {% else %}
-              <span class="text-muted">-</span>
-            {% endif %}
-          </td>
-          <td>
-            {% if not c.concluido %}
-              <a href="{{ url_for('marcar_concluido', id=c.id, empresa_id=empresa_id) }}" class="btn btn-sm btn-outline-success">
-                Concluir
-              </a>
-            {% else %}
-              <span class="badge bg-success">Concluído</span>
-            {% endif %}
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
+  <tr>
+    <th>Nome</th>
+    <th>Processador</th>
+    <th>Memória</th>
+    <th>Armazenamento</th>
+    <th>Disco</th>
+    <th>Anydesk</th>
+    <th>Status</th>
+    <th>Ações</th>
+  </tr>
+</thead>
+<tbody>
+  {% for c in computadores %}
+  <tr>
+    <td>{{ c.nome_maquina }}</td>
+    <td>{{ c.processador }}</td>
+    <td>{{ c.memoria }}</td>
+    <td>{{ c.armazenamento }}</td>
+    <td>{{ c.tipo_disco }}</td>
+    <td>
+      {% if c.anydesk_code %}
+        <a href="anydesk://{{ c.anydesk_code }}" class="btn btn-sm btn-anydesk">Abrir</a>
+      {% else %}
+        <span class="text-muted">-</span>
+      {% endif %}
+    </td>
+    <td>
+      {% if c.concluido %}
+        <span class="badge bg-success">Concluído</span>
+      {% else %}
+        <span class="badge bg-secondary">Pendente</span>
+      {% endif %}
+    </td>
+    <td>
+      <div class="btn-group" role="group">
+        {% if not c.concluido %}
+          <a href="{{ url_for('marcar_concluido', id=c.id, empresa_id=empresa_id) }}" class="btn btn-outline-success btn-sm">Concluir</a>
+        {% else %}
+          <a href="{{ url_for('resetar_status', id=c.id, empresa_id=empresa_id) }}" class="btn btn-warning btn-sm">Resetar</a>
+        {% endif %}
+        <a href="{{ url_for('editar_computador', id=c.id, empresa_id=empresa_id) }}" class="btn btn-primary btn-sm">Editar</a>
+        <a href="{{ url_for('excluir_computador', id=c.id, empresa_id=empresa_id) }}" class="btn btn-danger btn-sm" onclick="return confirm('Tem certeza que deseja excluir este computador?');">Excluir</a>
+      </div>
+    </td>
+  </tr>
+  {% endfor %}
+</tbody>
     </table>
   </div>
 {% extends 'base.html' %}
